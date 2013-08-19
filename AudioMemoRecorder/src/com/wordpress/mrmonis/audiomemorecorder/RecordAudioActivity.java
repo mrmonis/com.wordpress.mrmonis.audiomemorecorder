@@ -1,23 +1,29 @@
 package com.wordpress.mrmonis.audiomemorecorder;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.wordpress.mrmonis.audiomemorecorder.PlayAudioMemoFragment.PlayAudioMemoFragmentListener;
 
-public class RecordAudioActivity extends SherlockFragmentActivity {
+public class RecordAudioActivity extends SherlockFragmentActivity implements
+		PlayAudioMemoFragmentListener {
 
-	private FragmentManager mManager;
+	private RecordAudioMemoFragment mRecordFrag;
+	private PlayAudioMemoFragment mPlayFrag;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_record_audio);
-
-		mManager = getSupportFragmentManager();
-		swapFragment(new RecordAudioMemoFragment());
+		
+		// Create fragments
+		mPlayFrag = new PlayAudioMemoFragment();
+		mRecordFrag = new RecordAudioMemoFragment();
+		
+		// Start with the play fragment
+		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		transaction.add(R.id.main_fragment, mPlayFrag).commit();
 	}
 
 	@Override
@@ -26,12 +32,13 @@ public class RecordAudioActivity extends SherlockFragmentActivity {
 		getSupportMenuInflater().inflate(R.menu.record_audio, menu);
 		return true;
 	}
-	
-	/* Swap fragments */
-	public void swapFragment(SherlockFragment fragment) {
-		FragmentTransaction transaction = mManager.beginTransaction();
-		transaction.replace(R.id.main_fragment, fragment);
-		transaction.commit();
-	}
 
+	@Override
+	public void onCreateMemoCLicked() {
+		// Swap fragments
+		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		transaction.replace(R.id.main_fragment, mRecordFrag)
+				.addToBackStack(null).commit();
+
+	}
 }

@@ -1,10 +1,12 @@
 package com.wordpress.mrmonis.audiomemorecorder;
 
+import java.io.File;
 import java.io.IOException;
 
+import android.content.Context;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.Environment;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,9 +33,6 @@ public class RecordAudioMemoFragment extends SherlockFragment implements
 	// Flag for recording state
 	private boolean mIsRecording;
 
-	// Name of the recording
-	private String mFileName;
-
 	// Controls recording
 	private Button mRecordButton;
 
@@ -48,9 +47,6 @@ public class RecordAudioMemoFragment extends SherlockFragment implements
 				.findViewById(R.id.record_audio_memo_button);
 
 		mRecordButton.setOnClickListener(this);
-
-		mFileName = Environment.getExternalStorageDirectory().getAbsolutePath()
-				+ "/memo1.mp4";
 
 		return view;
 	}
@@ -73,10 +69,21 @@ public class RecordAudioMemoFragment extends SherlockFragment implements
 	}
 
 	private void startRecording() {
+		// Get the current time and date
+		Time now = new Time(Time.getCurrentTimezone());
+		now.setToNow();
+		String time = String.valueOf(now.year) + now.month + now.monthDay + now.hour
+				+ now.minute + now.second;
+
+		// Set directory and filename
+		File dir = getActivity().getDir("memos", Context.MODE_PRIVATE);
+		File memoFile = new File(dir, time + ".mp4");
+
+		// Set up the recorder
 		mRecorder = new MediaRecorder();
 		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-		mRecorder.setOutputFile(mFileName);
+		mRecorder.setOutputFile(memoFile.getAbsolutePath());
 		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
 
 		try {
@@ -85,12 +92,20 @@ public class RecordAudioMemoFragment extends SherlockFragment implements
 			Log.e(TAG, "Could not prepare recorder");
 		}
 
+		// Change the buttons text
+		mRecordButton.setText("Stop Recording");
+
+		// Start recording
 		mRecorder.start();
 		mIsRecording = true;
 
 	}
 
 	private void stopRecording() {
+		// Change record button text
+		mRecordButton.setText("Record");
+
+		// Stop recording
 		mRecorder.stop();
 		mRecorder.release();
 		mRecorder = null;
